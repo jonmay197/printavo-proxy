@@ -5,12 +5,21 @@ const EMAIL = 'jon@ftacharlotte.com';
 const TOKEN = 'bgXN54ykJDHOaBrv2US4AA';
 const PORT = process.env.PORT || 3000;
 
-const server = http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Accept',
+  'Access-Control-Max-Age': '86400'
+};
 
-  if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+const server = http.createServer((req, res) => {
+  Object.entries(CORS_HEADERS).forEach(([k, v]) => res.setHeader(k, v));
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
   if (req.method === 'GET' && req.url === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -19,7 +28,9 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method !== 'POST' || req.url !== '/graphql') {
-    res.writeHead(404); res.end('Not found'); return;
+    res.writeHead(404);
+    res.end('Not found');
+    return;
   }
 
   let body = '';
@@ -42,8 +53,8 @@ const server = http.createServer((req, res) => {
       let data = '';
       proxyRes.on('data', chunk => data += chunk);
       proxyRes.on('end', () => {
-        console.log('Printavo response status:', proxyRes.statusCode);
-        console.log('Printavo response:', data.substring(0, 200));
+        console.log('Printavo status:', proxyRes.statusCode);
+        console.log('Printavo response:', data.substring(0, 300));
         res.writeHead(proxyRes.statusCode, { 'Content-Type': 'application/json' });
         res.end(data);
       });
